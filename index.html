@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akashura Guitars</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/contentful@latest/dist/contentful.browser.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    
+    <!-- 導航列 -->
+    <nav class="bg-black text-white p-5 shadow-md sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <!-- Logo 區域：移除背景襯托，保持全透明 -->
+            <div class="flex items-center">
+                <img id="brand-logo" 
+                     src="logo.png" 
+                     alt="Akashura Logo" 
+                     class="h-[24px] w-auto object-contain">
+            </div>
+            
+            <!-- 分頁選單 -->
+            <ul class="flex space-x-8 text-sm uppercase font-light">
+                <li><a href="index.html" class="hover:text-gray-400">產品系列</a></li>
+                <li class="text-gray-600 cursor-not-allowed">品牌故事</li>
+                <li class="text-gray-600 cursor-not-allowed">藝術家</li>
+                <li class="text-gray-600 cursor-not-allowed">聯絡我們</li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 產品列表區 -->
+    <div id="product-list" class="grid grid-cols-1 md:grid-cols-3 gap-8 p-10 container mx-auto">
+        <p class="text-center col-span-3 text-gray-500">正在載入產品...</p>
+    </div>
+
+    <script>
+        const client = contentful.createClient({
+            space: 'w2up5vfofaou',
+            accessToken: 'z3G9FnnQMyBbrnk1VaOzrvqST7WlTnnEs703R8G-tdQ'
+        });
+
+        // 載入產品資料
+        async function fetchProducts() {
+            try {
+                const response = await client.getEntries({ content_type: 'guitar', include: 10 });
+                const container = document.getElementById('product-list');
+                container.innerHTML = '';
+
+                response.items.forEach(item => {
+                    const fields = item.fields;
+                    let imageUrl = 'https://via.placeholder.com/300';
+                    if (fields.image && fields.image.length > 0) {
+                        imageUrl = 'https:' + fields.image[0].fields.file.url;
+                    }
+                    
+                    container.innerHTML += `
+                        <a href="detail.html?id=${item.sys.id}" class="bg-white p-6 shadow-lg rounded-xl hover:scale-105 transition-transform duration-300 block">
+                            <img src="${imageUrl}" class="w-full h-64 object-cover rounded-lg mb-4">
+                            <h2 class="text-2xl font-bold text-gray-800">${fields.title || '未命名'}</h2>
+                            <p class="text-gray-600 mt-2 text-sm">${(fields.description || '').substring(0, 80)}...</p>
+                        </a>
+                    `;
+                });
+            } catch (err) {
+                console.error("讀取失敗:", err);
+                document.getElementById('product-list').innerHTML = '<p class="text-center text-red-500">無法讀取資料。</p>';
+            }
+        }
+
+        fetchProducts();
+    </script>
+</body>
+</html>

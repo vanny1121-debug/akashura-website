@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>產品詳情</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/contentful@latest/dist/contentful.browser.min.js"></script>
+</head>
+<body class="bg-gray-100 p-10">
+    <div id="detail-view" class="max-w-6xl mx-auto bg-white p-8 rounded shadow">
+        <p>正在載入詳細資料...</p>
+    </div>
+
+    <script>
+        const client = contentful.createClient({
+            space: 'w2up5vfofaou',
+            accessToken: 'z3G9FnnQMyBbrnk1VaOzrvqST7WlTnnEs703R8G-tdQ'
+        });
+
+        // 取得網址後面的 ID
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get('id');
+
+        async function fetchDetail() {
+            const entry = await client.getEntry(productId);
+            const fields = entry.fields;
+            
+            // 處理多張圖片
+            let imageHtml = '';
+            if (fields.image && fields.image.length > 0) {
+                fields.image.forEach(img => {
+                    const url = 'https:' + img.fields.file.url;
+                    imageHtml += `<img src="${url}" class="w-full h-auto max-h-[600px] object-contain rounded mb-4">`;
+                });
+            }
+
+            document.getElementById('detail-view').innerHTML = `
+                ${imageHtml}
+                <h1 class="text-4xl font-bold mb-4">${fields.title}</h1>
+                <p class="text-gray-700 whitespace-pre-line leading-relaxed text-lg">${fields.description}</p>
+                <a href="index.html" class="inline-block mt-8 px-6 py-2 bg-black text-white rounded hover:bg-gray-800 transition">回到列表</a>
+            `;
+        }
+        fetchDetail();
+    </script>
+</body>
+</html>
